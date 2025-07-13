@@ -1,6 +1,7 @@
 package org.example.springwebpushmvp.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
 import nl.martijndwars.webpush.Subscription;
@@ -16,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class NotificationService {
     private volatile boolean schedulerEnabled = true;
     private int sendCounter = 1;
@@ -25,7 +27,7 @@ public class NotificationService {
 
     public void toggleScheduler(boolean enable) {
         this.schedulerEnabled = enable;
-        System.out.println("Scheduler " + (enable ? "STARTED" : "PAUSED"));
+        log.info("Scheduler " + (enable ? "STARTED" : "PAUSED"));
     }
 
     public synchronized int getAndIncrementCounter() {
@@ -53,7 +55,7 @@ public class NotificationService {
     @Scheduled(fixedDelay = 1000)
     void sendNotifications() {
         if (!schedulerEnabled || subscribersService.getSubscriptions().isEmpty()) {
-            System.out.println("!schedulerEnabled: " + !schedulerEnabled + ",    subscribersService.getSubscriptions().isEmpty(): " + subscribersService.getSubscriptions().size() + ",    now: " + LocalTime.now());
+            log.warn("!schedulerEnabled: " + !schedulerEnabled + ",    subscribersService.getSubscriptions().isEmpty(): " + subscribersService.getSubscriptions().size() + ",    now: " + LocalTime.now());
             return;
         }
 
@@ -77,12 +79,12 @@ public class NotificationService {
     @Async("notificationTaskExecutor")
     public void sendNotification(Subscription subscription, String messageJson) {
         try {
-            System.out.println("Sending notification - Endpoint: " + subscription.endpoint
+            log.info("Sending notification - Endpoint: " + subscription.endpoint
                     + " | Message: " + messageJson);
             pushService.send(new Notification(subscription, messageJson));
         } catch (GeneralSecurityException | IOException | JoseException | ExecutionException
                  | InterruptedException e) {
-            System.out.println("Failed to send notification to " + subscription.endpoint
+            log.warn("Failed to send notification to " + subscription.endpoint
                     + " | Error: " + e.getMessage());
         }
     }

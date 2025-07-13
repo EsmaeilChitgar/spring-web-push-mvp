@@ -1,5 +1,6 @@
 package org.example.springwebpushmvp.api;
 
+import lombok.extern.slf4j.Slf4j;
 import nl.martijndwars.webpush.Subscription;
 import org.example.springwebpushmvp.service.NotificationService;
 import org.example.springwebpushmvp.service.SubscribersService;
@@ -11,6 +12,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/notifications")
+@Slf4j
 public class NotificationController {
 
     private final NotificationService notificationService;
@@ -63,7 +65,7 @@ public class NotificationController {
             try {
                 notificationService.sendManualNotification(sub, notificationTitle, notificationBody);
             } catch (Exception e) {
-                System.out.println("/send error: " + e.getMessage());
+                log.warn("/send error: " + e.getMessage());
                 return ResponseEntity.status(500).body("Failed to send to some subscribers");
             }
         }
