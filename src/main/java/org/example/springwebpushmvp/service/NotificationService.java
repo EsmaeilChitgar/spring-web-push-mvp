@@ -1,5 +1,7 @@
 package org.example.springwebpushmvp.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.martijndwars.webpush.Notification;
@@ -27,7 +29,7 @@ public class NotificationService {
 
     public void toggleScheduler(boolean enable) {
         this.schedulerEnabled = enable;
-        log.info("Scheduler " + (enable ? "STARTED" : "PAUSED"));
+        log.info("Scheduler {}", enable ? "STARTED" : "PAUSED");
     }
 
     public synchronized int getAndIncrementCounter() {
@@ -36,56 +38,40 @@ public class NotificationService {
 
     public void sendManualNotification(Subscription subscription, String title, String body) {
         int counter = getAndIncrementCounter();
-        String json = String.format("""
-                        {
-                            "title": "%s #%d",
-                            "body": "%s",
-                            "icon": "/icon.png",
-                            "counter": %d
-                        }
-                        """,
-                title,
-                counter,
-                body,
-                counter
-        );
-        sendNotification(subscription, json);
+        sendNotification(subscription, json(title, body, counter));
     }
 
     @Scheduled(fixedDelay = 1000)
     void sendNotifications() {
         if (!schedulerEnabled || subscribersService.getSubscriptions().isEmpty()) {
-            log.warn("!schedulerEnabled: " + !schedulerEnabled + ",    subscribersService.getSubscriptions().isEmpty(): " + subscribersService.getSubscriptions().size() + ",    now: " + LocalTime.now());
+            log.warn("!schedulerEnabled: {},    subscribersService.getSubscriptions().isEmpty(): {},    now: {}", !schedulerEnabled, subscribersService.getSubscriptions().size(), LocalTime.now());
             return;
         }
 
         int counter = getAndIncrementCounter();
-        String json = String.format("""
-                        {
-                            "title": "Server Update #%d",
-                            "body": "It is now: %tT",
-                            "icon": "/icon.png",
-                            "counter": %d
-                        }
-                        """,
-                counter,
-                LocalTime.now(),
-                counter
-        );
-
-        subscribersService.getSubscriptions().forEach(sub -> sendNotification(sub, json));
+        String title = "Server Update";
+        String body = String.format("It is now: %tT",LocalTime.now());
+        subscribersService.getSubscriptions().forEach(sub -> sendNotification(sub, json(title, body, counter)));
     }
 
     @Async("notificationTaskExecutor")
     public void sendNotification(Subscription subscription, String messageJson) {
         try {
-            log.info("Sending notification - Endpoint: " + subscription.endpoint
-                    + " | Message: " + messageJson);
+            log.info("Sending notification - Message: {} | Endpoint: {}", messageJson, subscription.endpoint);
             pushService.send(new Notification(subscription, messageJson));
         } catch (GeneralSecurityException | IOException | JoseException | ExecutionException
                  | InterruptedException e) {
-            log.warn("Failed to send notification to " + subscription.endpoint
-                    + " | Error: " + e.getMessage());
+            log.warn("Failed to send notification to {} | Error: {}", subscription.endpoint, e.getMessage());
         }
+    }
+
+    private String json(String title, String body, int counter) {
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode jsonNode = mapper.createObjectNode();
+        jsonNode.put("title", title + " #" + counter);
+        jsonNode.put("body", body);
+        jsonNode.put("icon", "/icon.png");
+        jsonNode.put("counter", counter);
+        return jsonNode.toString();
     }
 }

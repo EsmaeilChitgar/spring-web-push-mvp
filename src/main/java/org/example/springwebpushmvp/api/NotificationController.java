@@ -1,5 +1,6 @@
 package org.example.springwebpushmvp.api;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.martijndwars.webpush.Subscription;
 import org.example.springwebpushmvp.service.NotificationService;
@@ -9,19 +10,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
-
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/notifications")
 @Slf4j
 public class NotificationController {
-
     private final NotificationService notificationService;
     private final SubscribersService subscribersService;
-
-    public NotificationController(NotificationService notificationService, SubscribersService subscribersService) {
-        this.notificationService = notificationService;
-        this.subscribersService = subscribersService;
-    }
 
     @PostMapping("/subscribe")
     public ResponseEntity<Void> subscribe(@RequestBody Subscription subscription) {
@@ -36,36 +31,15 @@ public class NotificationController {
     }
 
     @PostMapping("/send-custom")
-    public ResponseEntity<String> sendNotification(
-            @RequestParam(required = false) String title,
-            @RequestParam(required = false) String body) {
-
-        String notificationTitle = Optional.ofNullable(title)
-                .orElse("📬 New Message");
-
-        String notificationBody = Optional.ofNullable(body)
-                .orElse("You have a new notification!");
-
-        String json = String.format("""
-                        {
-                            "title": "%s",
-                            "body": "%s",
-                            "icon": "/icon.png",
-                            "image": "/notification-banner.jpg",
-                            "vibrate": [200, 100, 200],
-                            "timestamp": %d
-                        }
-                        """,
-                notificationTitle,
-                notificationBody,
-                System.currentTimeMillis()
-        );
+    public ResponseEntity<String> sendCustomNotification(@RequestParam(required = false) String title, @RequestParam(required = false) String body) {
+        title = Optional.ofNullable(title).orElse("📬 New Message");
+        body = Optional.ofNullable(body).orElse("You have a new notification!");
 
         for (Subscription sub : subscribersService.getSubscriptions()) {
             try {
-                notificationService.sendManualNotification(sub, notificationTitle, notificationBody);
+                notificationService.sendManualNotification(sub, title, body);
             } catch (Exception e) {
-                log.warn("/send error: " + e.getMessage());
+                log.warn("/send error: {}", e.getMessage());
                 return ResponseEntity.status(500).body("Failed to send to some subscribers");
             }
         }
