@@ -37,8 +37,7 @@ public class NotificationService {
     }
 
     public void sendManualNotification(Subscription subscription, String title, String body) {
-        int counter = getAndIncrementCounter();
-        sendNotification(subscription, json(title, body, counter));
+        sendNotification(subscription, json(title, body, getAndIncrementCounter()));
     }
 
     @Scheduled(fixedDelay = 1000)
@@ -48,10 +47,9 @@ public class NotificationService {
             return;
         }
 
-        int counter = getAndIncrementCounter();
         String title = "Server Update";
-        String body = String.format("It is now: %tT",LocalTime.now());
-        subscribersService.getSubscriptions().forEach(sub -> sendNotification(sub, json(title, body, counter)));
+        String body = String.format("It is now: %tT", LocalTime.now());
+        subscribersService.getSubscriptions().forEach(sub -> sendNotification(sub, json(title, body, getAndIncrementCounter())));
     }
 
     @Async("notificationTaskExecutor")
