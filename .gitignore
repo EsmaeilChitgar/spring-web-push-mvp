@@ -1,5 +1,6 @@
 # Ignore IntelliJ IDEA files
 .idea/
+.idea/workspace.xml
 
 # Ignore build output directories
 target/
