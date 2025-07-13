@@ -1,6 +1,8 @@
-package org.example.pushnotifmvp;
+package org.example.springwebpushmvp.api;
 
 import nl.martijndwars.webpush.Subscription;
+import org.example.springwebpushmvp.service.NotificationService;
+import org.example.springwebpushmvp.service.SubscribersService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

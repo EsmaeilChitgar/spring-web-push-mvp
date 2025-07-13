@@ -1,11 +1,13 @@
-package org.example.pushnotifmvp;
+package org.example.springwebpushmvp.service;
 
+import lombok.Getter;
 import nl.martijndwars.webpush.Subscription;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 @Service
 public class SubscribersService {
     private final List<Subscription> subscriptions = new ArrayList<>();
@@ -19,9 +21,5 @@ public class SubscribersService {
         subscriptions.removeIf(sub ->
                 sub.endpoint.equals(subscription.endpoint)
         );
-    }
-
-    public List<Subscription> getSubscriptions() {
-        return subscriptions;
     }
 }

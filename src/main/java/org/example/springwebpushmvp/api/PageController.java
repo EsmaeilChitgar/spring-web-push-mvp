@@ -1,4 +1,4 @@
-package org.example.pushnotifmvp;
+package org.example.springwebpushmvp.api;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;

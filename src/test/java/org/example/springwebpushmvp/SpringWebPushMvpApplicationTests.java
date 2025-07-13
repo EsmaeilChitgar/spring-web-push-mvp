@@ -1,10 +1,10 @@
-package org.example.pushnotifmvp;
+package org.example.springwebpushmvp;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class PushNotifMvpApplicationTests {
+class SpringWebPushMvpApplicationTests {
 
     @Test
     void contextLoads() {

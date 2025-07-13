@@ -74,7 +74,7 @@ self.addEventListener('push', function (event) {
                                         notification.close();
                                     });
                                 });
-                        }, payload.duration || (payload.isScheduled ? 2000 : 5000));
+                        }, payload.duration || (payload.isScheduled ? 900 : 1000));
                     }
                 })
         );
